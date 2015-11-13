@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
@@ -37,6 +38,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     var gameOver = false
+    
+    var flapSound = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("flap", ofType: "wav")!)
+    var flapPlayer = AVAudioPlayer()
+    
+    var hitSound = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("hit", ofType: "wav")!)
+    var hitPlayer = AVAudioPlayer()
+
     
     func makeBg() {
         
@@ -73,6 +81,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func didMoveToView(view: SKView) {
         
         self.physicsWorld.contactDelegate = self
+        
+        do {
+            flapPlayer = try AVAudioPlayer(contentsOfURL: flapSound)
+        } catch {
+            // report error
+        }
+        
+        flapPlayer.prepareToPlay()
+        
+        do {
+            hitPlayer = try AVAudioPlayer(contentsOfURL: hitSound)
+        } catch {
+            // report error
+        }
+        
+        hitPlayer.prepareToPlay()
+
         
         self.addChild(movingObjects)
         self.addChild(labelContainer)
@@ -132,6 +157,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             scoreLabel.text = String(score)
             
         } else {
+            
+            hitPlayer.play()            //play hit sound on contact
             
             if gameOver == false {
             
@@ -211,6 +238,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
        
             bird.physicsBody!.velocity = CGVectorMake(0, 0)
             bird.physicsBody!.applyImpulse(CGVectorMake(0, 50))
+            flapPlayer.play()                                       //play flap sound when making bird move
             
         } else {
             
